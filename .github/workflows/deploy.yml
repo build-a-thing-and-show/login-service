@@ -28,28 +28,17 @@ jobs:
     - name: Build app
       run: npm run build
 
-    # Test the app (optional, if you have tests)
-    #- name: Run tests
-    #  run: npm test
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout code
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    # Set up Node.js
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: 16
-
-    # Install dependencies
-    - name: Install dependencies
-      run: npm install
+    # Add SSH key
+    - name: Add SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
 
     # Deploy to AWS
     - name: Deploy to AWS EC2
@@ -57,10 +46,39 @@ jobs:
       with:
         host: ${{ secrets.AWS_HOST }}
         username: ${{ secrets.AWS_USER }}
-        key: ${{ secrets.AWS_SSH_KEY }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd ~/login-service
-          git pull origin main
-          npm install
-          npm run build
-          pm2 restart all
+          DEPLOY_DIR=~/login-service
+          REPO_URL=https://github.com/build-a-thing-and-show/login-service.git
+          BRANCH=main
+
+          # Create or update the deployment directory
+          if [ -d "$DEPLOY_DIR/.git" ]; then
+            echo "Updating existing repository..."
+            cd $DEPLOY_DIR
+            git fetch origin
+            git checkout $BRANCH
+            git pull origin $BRANCH
+          else
+            echo "Cloning repository..."
+            rm -rf $DEPLOY_DIR
+            mkdir -p $DEPLOY_DIR
+            git clone --branch $BRANCH $REPO_URL $DEPLOY_DIR
+            cd $DEPLOY_DIR
+          fi
+
+          # Clean untracked files
+          git clean -fdx
+
+          # Install dependencies and build
+          if [ -f "package.json" ]; then
+            npm install
+            npm run build
+          else
+            echo "Error: package.json not found. Exiting."
+            exit 1
+          fi
+
+          # Restart the application with PM2
+          pm2 start dist/index.js --name "login-service" || pm2 restart "login-service"
+          pm2 save
