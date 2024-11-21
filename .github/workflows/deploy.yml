@@ -59,7 +59,7 @@ jobs:
         username: ${{ secrets.AWS_USER }}
         key: ${{ secrets.AWS_SSH_KEY }}
         script: |
-          cd /login-service
+          cd ~/login-service
           git pull origin main
           npm install
           npm run build
