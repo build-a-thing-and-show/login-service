@@ -5,7 +5,7 @@ const PORT = 3000;
 
 // Define a route
 app.get('/', (req: Request, res: Response) => {
-    res.send('BYE BYE World!!!!!');
+    res.send('This Application is under construction. Please be patient.');
 });
 
 // Start the server
