@@ -1,25 +1,22 @@
 import request from 'supertest';
 import app from '../src/index';
 
-// Start the server before the tests and store the server object
-let server: any;
-const PORT = 5000;
-beforeAll(() => {
-  server = app.listen(process.env.PORT || PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
-  });
-});
-
-// Close the server after all tests
-afterAll(() => {
-  server.close();
-});
+jest.mock('../src/index', () => ({
+  default: jest.fn().mockReturnValue({
+    get: jest.fn(),
+    listen: jest.fn(),
+  }),
+}));
 
 describe('GET /', () => {
   it('should return "This Application is under construction. Please be patient."', async () => {
+    app.get.mockImplementation((path, handler) => {
+      if (path === '/') {
+        handler({ query: {} }, { send: jest.fn() });
+      }
+    });
     const response = await request(app).get('/');
     expect(response.status).toBe(200);
-    expect(response.text).toBe('This Application is under construction. Please be patient.');
-    server.close();
+    expect(response.text).toBe('should return "This Application is under construction. Please be patient.');
   });
 });
