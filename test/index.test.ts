@@ -1,8 +1,7 @@
 import request from 'supertest';
 import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express-serve-static-core';
-import app from '../src/index';
 
-jest.mock(app, () => ({
+jest.mock('../src/index', () => ({
   default: jest.fn().mockReturnValue({
     get: jest.fn(),
     listen: jest.fn(),
