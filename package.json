@@ -26,6 +26,8 @@
     "ts-jest": "*",
     "@babel/core": "*",
     "@babel/preset-env": "*",
-    "@babel/preset-typescript": "*"
+    "@babel/preset-typescript": "*",
+    "supertest": "*",
+    "@types/supertest": "*"
   }
 }
