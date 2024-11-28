@@ -28,6 +28,10 @@ jobs:
     - name: Build app
       run: npm run build
 
+    # Run tests
+    - name: Run tests
+      run: npm run test
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
