@@ -1,5 +1,5 @@
 import request from 'supertest';
-import express, { Express, Request, Response, NextFunction } from 'express-serve-static-core';
+import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express-serve-static-core';
 import app from '../src/index';
 
 jest.mock('../src/index', () => ({
