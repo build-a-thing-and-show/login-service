@@ -8,7 +8,7 @@ describe('GET /', () => {
       send: jest.fn(),
     };
 
-    app.get.mockImplementation((_, res) => {
+    (app.get as jest.MockedFunction<typeof app.get>).mockImplementation((_, res) => {
       res = mockResponse; // Assign the mock response object to the res parameter
       res.send('Hello, World!');
     });
