@@ -2,10 +2,10 @@ import request from 'supertest';
 import app from '../src/index';
 
 // Start the server before the tests and store the server object
-let server;
+let server: any;
 cost PORT = 3000;
 beforeAll(() => {
-  server = app.listen(PORT, () => {
+  server = app.listen(process.env.PORT || PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);
   });
 });
