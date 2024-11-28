@@ -4,7 +4,7 @@
   "description": "The service for login page and authentication",
   "main": "index.js",
   "scripts": {
-    "test": "npx jest",
+    "test": "npx jest --detectOpenHandles",
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc"
