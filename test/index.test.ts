@@ -16,7 +16,7 @@ describe('GET /', () => {
       send: jest.fn(),
     };
 
-    (app.get as jest.Mock).mockImplementation((path: string, handler: RequestHandler) => {
+    app.get.mockImplementation((path: string, handler: RequestHandler) => {
       if (path === '/') {
         handler({ query: {} } as Request, mockResponse as Response, jest.fn() as NextFunction);
       }
