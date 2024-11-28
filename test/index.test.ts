@@ -1,28 +1,26 @@
 import request from 'supertest';
-import express, { Express, Request, Response, NextFunction, RequestHandler } from 'express-serve-static-core';
+import express, { Express, Request, Response } from 'express';
+import app from '../src/index';
+
+jest.mock('express', () => ({
+  Router: jest.fn().mockReturnThis(),
+  Request: jest.fn(),
+  Response: jest.fn(),
+}));
 
 jest.mock('../src/index', () => ({
-  default: jest.fn().mockReturnValue({
+  default: {
     get: jest.fn(),
-    listen: jest.fn(),
-  }),
+  },
 }));
 
 describe('GET /', () => {
-  it('should return "This Application is under construction. Please be patient."', async () => {
-    const mockResponse: Partial<Response> = {
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn(),
-    };
-
-    app.get.mockImplementation((path: string, handler: RequestHandler) => {
-      if (path === '/') {
-        handler({ query: {} } as Request, mockResponse as Response, jest.fn() as NextFunction);
-      }
+  it('Should return the correct message for the GET method', async () => {
+    app.get.mockImplementation((_, res) => {
+      res.send('Incorrect value');
     });
-
     const response = await request(app).get('/');
     expect(response.status).toBe(200);
-    expect(response.text).toBe('This Application is under construction. Please be patient.');
+    expect(response.text).toBe('Hello, World!');
   });
 });
