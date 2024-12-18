@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 
 const app = express();
-const PORT = 3001;
+const PORT = 3000;
 
 // Serve React static files from frontend/build
 app.use(express.static(path.join(__dirname, '../client/build')));
