@@ -74,6 +74,12 @@ jobs:
           # Clean untracked files
           git clean -fdx
 
+          # Install client dependencies and build
+          cd client
+          npm install
+          npm run build
+          cd ..
+
           # Install dependencies and build
           if [ -f "package.json" ]; then
             npm install
