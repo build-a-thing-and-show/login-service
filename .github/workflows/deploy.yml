@@ -1,9 +1,8 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main   # Trigger workflow on push to the main branch
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
@@ -32,40 +31,31 @@ jobs:
     - name: Run tests
       run: npm run test
 
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Build and tag the Docker image
-      run: |
-        docker build -t login-service-api .
-
-    - name: Login to ECR (if using AWS ECR)
-      uses: aws-actions/configure-aws-credentials@v4
+    # Authenticate with ECR
+    - name: Login to ECR
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION}}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-    - name: Log in to Amazon ECR
+    - name: Authenticate Docker with ECR
       run: |
         aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URL }}
 
-    - name: Push to ECR
+    - name: Build and tag the Docker image
       run: |
-        docker push login-service-api
+        docker build -t ${{ secrets.ECR_REPOSITORY_URL }}:latest .
+
+    - name: Push Docker image to ECR
+      run: |
+        docker push ${{ secrets.ECR_REPOSITORY_URL }}:latest
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    # Add SSH key
-    #- name: Add SSH key
-    #  run: |
-    #    mkdir -p ~/.ssh
-    #    echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-    #    chmod 600 ~/.ssh/id_rsa
-
     # Deploy to AWS
     - name: Deploy to AWS EC2
       uses: appleboy/ssh-action@v0.1.6
@@ -74,10 +64,8 @@ jobs:
         username: ${{ secrets.AWS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          docker pull login-service-api
-          docker stop web # Stop existing container (if any)
-          docker rm web # Remove existing container (if any)
-          docker run -d -p 3000:3000 login-service-api # Assuming your Node.js app listens on port 3000
-          # Restart the application with PM2
-          # pm2 start dist/index.js --name "login-service" || pm2 restart "login-service"
-          # pm2 save
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URL }}
+          docker pull ${{ secrets.ECR_REPOSITORY_URL }}:latest
+          docker stop web || true # Stop existing container (if any)
+          docker rm web || true   # Remove existing container (if any)
+          docker run -d -p 3000:3000 --name web ${{ secrets.ECR_REPOSITORY_URL }}:latest
