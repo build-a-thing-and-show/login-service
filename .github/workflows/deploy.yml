@@ -32,17 +32,35 @@ jobs:
     - name: Run tests
       run: npm run test
 
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build and tag the Docker image
+      run: |
+        docker build -t login-service-api .
+
+    - name: Login to ECR (if using AWS ECR)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION}}
+
+    - name: Push to ECR
+      run: |
+        docker push login-service-api
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
     # Add SSH key
-    - name: Add SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+    #- name: Add SSH key
+    #  run: |
+    #    mkdir -p ~/.ssh
+    #    echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+    #    chmod 600 ~/.ssh/id_rsa
 
     # Deploy to AWS
     - name: Deploy to AWS EC2
@@ -52,43 +70,10 @@ jobs:
         username: ${{ secrets.AWS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          DEPLOY_DIR=~/login-service
-          REPO_URL=https://github.com/build-a-thing-and-show/login-service.git
-          BRANCH=main
-
-          # Create or update the deployment directory
-          if [ -d "$DEPLOY_DIR/.git" ]; then
-            echo "Updating existing repository..."
-            cd $DEPLOY_DIR
-            git fetch origin
-            git checkout $BRANCH
-            git pull origin $BRANCH
-          else
-            echo "Cloning repository..."
-            rm -rf $DEPLOY_DIR
-            mkdir -p $DEPLOY_DIR
-            git clone --branch $BRANCH $REPO_URL $DEPLOY_DIR
-            cd $DEPLOY_DIR
-          fi
-
-          # Clean untracked files
-          git clean -fdx
-
-          # Install client dependencies and build
-          cd client
-          npm install
-          npm run build
-          cd ..
-
-          # Install dependencies and build
-          if [ -f "package.json" ]; then
-            npm install
-            npm run build
-          else
-            echo "Error: package.json not found. Exiting."
-            exit 1
-          fi
-
+          docker pull login-service-api
+          docker stop web # Stop existing container (if any)
+          docker rm web # Remove existing container (if any)
+          docker run -d -p 3000:3000 login-service-api # Assuming your Node.js app listens on port 3000
           # Restart the application with PM2
-          pm2 start dist/index.js --name "login-service" || pm2 restart "login-service"
-          pm2 save
+          # pm2 start dist/index.js --name "login-service" || pm2 restart "login-service"
+          # pm2 save
