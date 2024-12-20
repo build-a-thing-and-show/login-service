@@ -45,7 +45,7 @@ jobs:
 
     - name: Build and tag the Docker image
       run: |
-        docker build -t ${{ secrets.ECR_REPOSITORY_URL }}:latest ../../
+        docker build -t ${{ secrets.ECR_REPOSITORY_URL }}:latest .
 
     - name: Push Docker image to ECR
       run: |
