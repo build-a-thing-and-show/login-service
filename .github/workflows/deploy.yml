@@ -45,11 +45,11 @@ jobs:
 
     - name: Build and tag the Docker image
       run: |
-        docker build -t login-service-api:latest .
+        docker build -t login_service_api:latest .
 
     - name: Push Docker image to ECR
       run: |
-        docker push login-service-api:latest
+        docker push login_service_api:latest
 
   deploy:
     needs: build
