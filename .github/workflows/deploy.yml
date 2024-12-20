@@ -64,6 +64,7 @@ jobs:
         username: ${{ secrets.AWS_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URL }}
           docker pull ${{ secrets.ECR_REPOSITORY_URL }}:latest
           docker stop web || true # Stop existing container (if any)
           docker rm web || true   # Remove existing container (if any)
