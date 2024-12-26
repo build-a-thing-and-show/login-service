@@ -1,4 +1,4 @@
-FROM node:23-alpine  AS build
+FROM node:23-alpine AS build
 
 WORKDIR /app
 
@@ -17,6 +17,6 @@ WORKDIR /app
 
 COPY --from=build /app/dist ./dist
 
-EXPOSE 3000
+EXPOSE 5000
 
 CMD ["node", "dist/index.js"]

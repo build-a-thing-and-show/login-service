@@ -18,7 +18,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 23
 
     # Install dependencies
     - name: Install dependencies
@@ -69,4 +69,4 @@ jobs:
           docker pull ${{ secrets.ECR_REPOSITORY_URL }}:latest
           docker stop web || true # Stop existing container (if any)
           docker rm web || true   # Remove existing container (if any)
-          docker run -d -p 3000:3000 --name web ${{ secrets.ECR_REPOSITORY_URL }}:latest
+          docker run -d -p 5000:5000 --name web ${{ secrets.ECR_REPOSITORY_URL }}:latest
