@@ -6,6 +6,10 @@ const PORT = 5000;
 
 // API route
 app.get('/', (req: Request, res: Response) => {
+  res.json({ message: 'Hello from the login-service root!' });
+});
+
+app.post('/api/message', (req: Request, res: Response) => {
   res.json({ message: 'Hello from the backend!' });
 });
 
